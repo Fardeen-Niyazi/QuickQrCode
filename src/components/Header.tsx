@@ -4,7 +4,7 @@ import { Text, StyleSheet } from 'react-native';
 export default function Header() {
   return (
     <>
-      <Text style={styles.title}>QR Generator</Text>
+      <Text style={styles.title}>QR Generator!</Text>
       <Text style={styles.subtitle}>Turn any text or link into a QR code.</Text>
     </>
   );

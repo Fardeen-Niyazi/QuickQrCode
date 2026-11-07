@@ -1,0 +1,83 @@
+name: Deploy Android internal
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install JS dependencies
+        run: npm ci
+        working-directory: .
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: android
+
+      - name: Decode keystore and Play key
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          echo '${{ secrets.PLAY_KEY_JSON }}' > play-key.json
+
+      - name: Set version code
+        run: echo "VERSION_CODE=$((GITHUB_RUN_NUMBER + 10))" >> $GITHUB_ENV
+
+      - name: Build and upload
+        env:
+          MYAPP_UPLOAD_STORE_FILE: ${{ runner.temp }}/upload.jks
+          MYAPP_UPLOAD_STORE_PASSWORD: ${{ secrets.MYAPP_UPLOAD_STORE_PASSWORD }}
+          MYAPP_UPLOAD_KEY_ALIAS: ${{ secrets.MYAPP_UPLOAD_KEY_ALIAS }}
+          MYAPP_UPLOAD_KEY_PASSWORD: ${{ secrets.MYAPP_UPLOAD_KEY_PASSWORD }}
+          VERSION_NAME: '1.0'
+        run: bundle exec fastlane android internal
+
+      - name: Notify Discord (success)
+        if: success()
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_SPIDY_BOT_URL }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          jq -n \
+            --arg title "✅ Android build uploaded to Internal testing" \
+            --arg desc "Version code **$VERSION_CODE**
+          Branch: \`${{ github.ref_name }}\`
+          By: ${{ github.actor }}
+          Commit: $COMMIT_MSG" \
+            --arg url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            '{embeds:[{title:$title, description:$desc, url:$url, color:3066993}]}' \
+          | curl -sS -H "Content-Type: application/json" -d @- "$WEBHOOK"
+
+      - name: Notify Discord (failure)
+        if: failure()
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_SPIDY_BOT_URL }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          jq -n \
+            --arg title "❌ Android build failed" \
+            --arg desc "Branch: \`${{ github.ref_name }}\`
+          By: ${{ github.actor }}
+          Commit: $COMMIT_MSG
+          Open the run link above to see the logs." \
+            --arg url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            '{embeds:[{title:$title, description:$desc, url:$url, color:15158332}]}' \
+          | curl -sS -H "Content-Type: application/json" -d @- "$WEBHOOK"
