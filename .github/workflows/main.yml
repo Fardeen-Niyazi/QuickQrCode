@@ -39,7 +39,7 @@ jobs:
           PLAY_KEY_JSON: ${{ secrets.PLAY_KEY_JSON }}
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
-          printf '%s' "$PLAY_KEY_JSON" > fastlane/playstore-credentials.json
+          printf '%s' "$PLAY_KEY_JSON" > playstore-credentials.json
 
       - name: Set version code
         run: echo "VERSION_CODE=$((GITHUB_RUN_NUMBER + 10))" >> $GITHUB_ENV
