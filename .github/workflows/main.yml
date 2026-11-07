@@ -34,9 +34,14 @@ jobs:
           working-directory: android
 
       - name: Decode keystore and Play key
+        env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        PLAY_KEY_JSON: ${{ secrets.PLAY_KEY_JSON }}
+        
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
-          echo '${{ secrets.PLAY_KEY_JSON }}' > play-key.json
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          printf '%s' "$PLAY_KEY_JSON" > fastlane/playstore-credentials.json
+          jq empty fastlane/playstore-credentials.json && echo "Play key JSON is valid"
 
       - name: Set version code
         run: echo "VERSION_CODE=$((GITHUB_RUN_NUMBER + 10))" >> $GITHUB_ENV
