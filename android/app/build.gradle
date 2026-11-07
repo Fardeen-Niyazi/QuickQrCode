@@ -85,12 +85,15 @@ if (localPropertiesFile.exists()) {
 def secret = { String key -> System.getenv(key) ?: localProperties.getProperty(key) }
 
 android {
-    // ... your existing config ...
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdk rootProject.ext.compileSdkVersion
+    namespace "com.quickqrcodes"
     defaultConfig {
         applicationId "com.quickqrcodes"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode (System.getenv("VERSION_CODE") ?: "1").toInteger()
+        versionCode Integer.parseInt(System.getenv("VERSION_CODE") ?: "1")
         versionName System.getenv("VERSION_NAME") ?: "1.0"
     }
     signingConfigs {
