@@ -18,10 +18,10 @@ default_platform(:android)
 platform :android do
   desc "Build and upload to internal testing"
   lane :internal do
-    gradle(task: "clean bundle", build_type: "Release")
+    gradle(tasks: ["clean", "bundleRelease"])
+
     upload_to_play_store(
       track: "internal",
-      aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
