@@ -1,4 +1,4 @@
-package com.quickqrcode
+package com.quickqrcodes
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

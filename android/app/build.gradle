@@ -72,14 +72,23 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+// 1. Load local.properties at the top of the file
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.quickqrcode"
+    namespace "com.quickqrcodes"
     defaultConfig {
-        applicationId "com.quickqrcode"
+        applicationId "com.quickqrcodes"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -92,15 +101,24 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            keyAlias localProperties['MYAPP_UPLOAD_KEY_ALIAS']
+            keyPassword localProperties['MYAPP_UPLOAD_KEY_PASSWORD']
+            storeFile file(localProperties['MYAPP_UPLOAD_STORE_FILE'])
+            storePassword localProperties['MYAPP_UPLOAD_STORE_PASSWORD']
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
+
+            
+       
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }

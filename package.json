@@ -15,6 +15,7 @@
     "react-native": "0.88.1",
     "react-native-fs": "^2.20.0",
     "react-native-qrcode-svg": "^6.3.54",
+    "react-native-rename": "^3.3.2",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-share": "^12.3.1",
     "react-native-svg": "^15.16.1"
